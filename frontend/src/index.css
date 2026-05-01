@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Custom styles can be added here */
+
+.btn-nearby {
+  @apply bg-white text-green-800 border-4 border-red-500 px-4 py-2 rounded hover:bg-gray-200 transition-all font-bold;
+}
+
+body {
+  @apply bg-gray-100 text-gray-800;
+}
+ 
