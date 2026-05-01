@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for default Leaflet icon missing in React builds
+// Fix for default Leaflet icon missing in React builds 
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 let DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
@@ -25,7 +25,7 @@ function App() {
     return () => navigator.geolocation.clearWatch(watchID);
   }, []);
 
-  // 2. Fetch from Overpass API (Free Google Places Alternative)
+  // 2. Fetch from Overpass API 
   const findNearby = async (category) => {
     setLoading(true);
     const [lat, lng] = position;
@@ -95,7 +95,7 @@ function App() {
         <input 
           type="number" 
           value={range} 
-          onChange={(e) => setRange(e.target.value)} 
+          onChange={(e) => setRange(Number(e.target.value))}
           className="ml-4 bg-gray-800 text-white text-lg px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-400  w-24"
           placeholder="Range (m)"
         />
