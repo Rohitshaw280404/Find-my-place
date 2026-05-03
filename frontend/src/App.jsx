@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "leaflet-routing-machine";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
 // Fix for default Leaflet icons
 import markerIcon from "leaflet/dist/images/marker-icon.png";
@@ -128,7 +129,7 @@ function App() {
     <div className="bg-gray-900 min-h-screen text-white p-4 font-sans">
       <header className="text-center mb-6">
         <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-          GeoExplorer Pro
+         Find My Place
         </h1>
         <div className="flex justify-center gap-4 mt-2">
            <span className="text-[10px] bg-gray-800 px-2 py-1 rounded border border-gray-700">Favorites: {favorites.length}</span>
