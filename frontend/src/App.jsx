@@ -89,32 +89,53 @@ function App() {
   }, [places]);
 
   const findNearby = async (category) => {
-    setLoading(true);
-    setTarget(null); 
-    
-    // Mapping our friendly names to OSM Overpass Tags
-    const tags = {
-      restaurant: 'node["amenity"="restaurant"]',
-      mall: 'node["shop"="mall"]',
-      hospital: 'node["amenity"="hospital"]',
-      cinema: 'node["amenity"="cinema"]',
-      "Railway station": 'node["railway"="station"]'
-    };
+  if (loading) return;
+  setLoading(true);
+  setPlaces([]); 
+  setTarget(null);
 
-    const activeTag = tags[category];
-    const query = `[out:json];${activeTag}(around:${range},${position[0]},${position[1]});out;`;
-    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const [lat, lng] = position;
 
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      setPlaces(data.elements || []);
-    } catch (error) { 
-      console.error("Fetch Error:", error); 
-    } finally { 
-      setLoading(false); 
-    }
+  const tags = {
+    restaurant: 'node["amenity"="restaurant"]',
+    mall: 'node["shop"="mall"]',
+    hospital: 'node["amenity"="hospital"]',
+    cinema: 'node["amenity"="cinema"]',
+    "Railway station": 'node["railway"="station"]'
   };
+
+  // The Overpass QL Query
+  const query = `[out:json][timeout:25];${tags[category]}(around:${range},${lat},${lng});out;`;
+
+  try {
+    // We switch to POST here to avoid the 406 "Not Acceptable" error
+    const response = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      // Overpass expects the body to be prefixed with "data="
+      body: "data=" + encodeURIComponent(query),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.elements && data.elements.length > 0) {
+      setPlaces(data.elements);
+    } else {
+      alert("Nothing found in this radius. Try sliding to 10km!");
+    }
+  } catch (error) {
+    console.error("Search Error:", error);
+    alert("The map server is currently declining the request. This usually happens with high traffic. Try again in a few seconds.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Helper to recenter map smoothly
   function RecenterMap({ coords }) {
