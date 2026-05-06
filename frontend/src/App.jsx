@@ -88,7 +88,7 @@ function App() {
     return () => navigator.geolocation.clearWatch(watchID);
   }, [places]);
 
-  const findNearby = async (category) => {
+ const findNearby = async (category) => {
   if (loading) return;
   setLoading(true);
   setPlaces([]); 
@@ -104,22 +104,25 @@ function App() {
     "Railway station": 'node["railway"="station"]'
   };
 
-  // The Overpass QL Query
   const query = `[out:json][timeout:25];${tags[category]}(around:${range},${lat},${lng});out;`;
 
+  // We are switching to the lz4 mirror which is generally more 
+  // accepting of requests from hosting providers like Vercel.
+  const MIRROR_URL = "https://lz4.overpass-api.de/api/interpreter";
+
   try {
-    // We switch to POST here to avoid the 406 "Not Acceptable" error
-    const response = await fetch("https://overpass-api.de/api/interpreter", {
+    const response = await fetch(MIRROR_URL, {
       method: "POST",
-      // Overpass expects the body to be prefixed with "data="
-      body: "data=" + encodeURIComponent(query),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+      // Some mirrors prefer the raw query without "data=" when using POST
+      body: query, 
     });
 
+    if (response.status === 406) {
+      throw new Error("The API is rejecting the request from this domain.");
+    }
+
     if (!response.ok) {
-      throw new Error(`Server responded with ${response.status}`);
+      throw new Error(`Server Error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -127,11 +130,11 @@ function App() {
     if (data.elements && data.elements.length > 0) {
       setPlaces(data.elements);
     } else {
-      alert("Nothing found in this radius. Try sliding to 10km!");
+      alert("Nothing found. Try increasing the search radius!");
     }
   } catch (error) {
     console.error("Search Error:", error);
-    alert("The map server is currently declining the request. This usually happens with high traffic. Try again in a few seconds.");
+    alert("The map server is currently blocking the request from Vercel. This is a common issue with free APIs. Please try clicking the button again or try the 'Cinema' category.");
   } finally {
     setLoading(false);
   }
@@ -149,7 +152,7 @@ function App() {
   return (
     <div className="bg-gray-900 min-h-screen text-white p-4 font-sans">
       <header className="text-center mb-6">
-        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-600">
          Find My Place
         </h1>
         <div className="flex justify-center gap-4 mt-2">
